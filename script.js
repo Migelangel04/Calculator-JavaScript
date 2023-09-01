@@ -16,22 +16,25 @@ let numberZero = document.getElementById('numberZero');
 
 //Operator Buttons
 let exponentButton = document.getElementById('exponentButton');
-let backButton = document.getElementById('backButton');
-let clearButton = document.getElementById('clearButton');
 let divideButton = document.getElementById('divideButton');
 let multiplyButton = document.getElementById('multiplyButton');
 let minusButton = document.getElementById('minusButton');
 let plusButton = document.getElementById('plusButton');
 let decimalButton = document.getElementById('decimalButton');
-let squareRootButton = document.getElementById('squareRootButton');
+let toggleNegative = document.getElementById('toggleNegative');
+
 let enterButton = document.getElementById('enterButton');
+let backButton = document.getElementById('backButton');
+let clearButton = document.getElementById('clearButton');
 
 
 //Variables
-let currentSum = 0;
-let currentInput = [];
-let currentInputString = "";
-
+let operandOne = "";
+let operandOneActive = true;
+let operandTwo = "";
+let operandTwoActive = false;
+let currentOperation = "";
+let currentSum = "none";
 
 
 //Event Listeners
@@ -39,93 +42,545 @@ clearButton.addEventListener('click', () => clearScreen());
 backButton.addEventListener('click', () => backOperation());
 enterButton.addEventListener('click', () => getResult());
 
-numberZero.addEventListener('click', () => handleNumberOrOperation(0));
-numberOne.addEventListener('click', () => handleNumberOrOperation(1));
-numberTwo.addEventListener('click', () => handleNumberOrOperation(2));
-numberThree.addEventListener('click', () => handleNumberOrOperation(3));
-numberFour.addEventListener('click', () => handleNumberOrOperation(4));
-numberFive.addEventListener('click', () => handleNumberOrOperation(5));
-numberSix.addEventListener('click', () => handleNumberOrOperation(6));
-numberSeven.addEventListener('click', () => handleNumberOrOperation(7));
-numberEight.addEventListener('click', () => handleNumberOrOperation(8));
-numberNine.addEventListener('click', () => handleNumberOrOperation(9));
+numberZero.addEventListener('click', () => handleNumber("0"));
+numberOne.addEventListener('click', () => handleNumber("1"));
+numberTwo.addEventListener('click', () => handleNumber("2"));
+numberThree.addEventListener('click', () => handleNumber("3"));
+numberFour.addEventListener('click', () => handleNumber("4"));
+numberFive.addEventListener('click', () => handleNumber("5"));
+numberSix.addEventListener('click', () => handleNumber("6"));
+numberSeven.addEventListener('click', () => handleNumber("7"));
+numberEight.addEventListener('click', () => handleNumber("8"));
+numberNine.addEventListener('click', () => handleNumber("9"));
+decimalButton.addEventListener('click', () => handleNumber("."));
 
-exponentButton.addEventListener('click', () => handleNumberOrOperation("^"));
-divideButton.addEventListener('click', () => handleNumberOrOperation("/"));
-multiplyButton.addEventListener('click', () => handleNumberOrOperation("*"));
-minusButton.addEventListener('click', () => handleNumberOrOperation("-"));
-plusButton.addEventListener('click', () => handleNumberOrOperation("+"));
-squareRootButton.addEventListener('click', () => handleNumberOrOperation("**"));
-decimalButton.addEventListener('click', () => handleNumberOrOperation("."));
-
-
-
-
-
-
-
-
-
-
-
-
+exponentButton.addEventListener('click', () => handleOperation("^"));
+divideButton.addEventListener('click', () => handleOperation("÷"));
+multiplyButton.addEventListener('click', () => handleOperation("*"));
+minusButton.addEventListener('click', () => handleOperation("-"));
+plusButton.addEventListener('click', () => handleOperation("+"));
+toggleNegative.addEventListener('click', () => handleOperation("(+/-)"))
 
 
 //Functions
 
 function clearScreen()
 {
-    currentSum = 0;
-    currentInput = [];
-    currentInputString = "";
-    liveInput.textContent = "";
-    answerInput.textContent = "";
+    resetAfterResult();
+    currentSum = "none";
+    answerInput.textContent = " ";
+    liveInput.textContent = " ";
 }
 
 function backOperation()
 {
-    if (currentInput.length >= 1)
+    if (operandOneActive && operandOne.length > 0)
     {
-        currentInput.pop();
-        currentInputString = currentInputString.substring(0, currentInput.length - 1);
-        liveInput.textContent = currentInputString;
+        operandOne = operandOne.substring(0, operandOne.length - 1);
+        liveInput.textContent = operandOne;
     }
 
+    else if (operandTwoActive && operandTwo.length === 0)
+    {
+        currentOperation = "";
+        operandOneActive = true;
+        operandTwoActive = false;
+        liveInput.textContent = operandOne;
+    }
+
+    else if (operandTwoActive && operandTwo.length > 0)
+    {
+        operandTwo = operandTwo.substring(0, operandTwo.length - 1);
+        liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+    }
 }
 
 function getResult()
 {
-
+    if (operandTwoActive && operandTwo.length >= 1)
+    {
+        if (currentOperation === "^")
+        {
+            let result = exponent(operandOne, operandTwo);
+            answerInput.textContent = result;
+            liveInput.textContent = operandOne + " ^ " + operandTwo + " =";
+            currentSum = result;
+            resetAfterResult();
+            return result;
+        }
+    
+        else if (currentOperation === "÷")
+        {
+            let result = divide(operandOne, operandTwo);
+            answerInput.textContent = result;
+            liveInput.textContent = operandOne + " ÷ " + operandTwo + " =";
+            currentSum = result;
+            resetAfterResult();
+            return result;
+        }
+    
+        else if (currentOperation === "*")
+        {
+            let result = mutliply(operandOne, operandTwo);
+            answerInput.textContent = result;
+            liveInput.textContent = operandOne + " * " + operandTwo + " =";
+            currentSum = result;
+            resetAfterResult();
+            return result;
+        }
+    
+        else if (currentOperation === "-")
+        {
+            let result = subtract(operandOne, operandTwo);
+            answerInput.textContent = result;
+            liveInput.textContent = operandOne + " - " + operandTwo + " =";
+            currentSum = result;
+            resetAfterResult();
+            return result;
+        }
+    
+        else if (currentOperation === "+")
+        {
+            let result = add(operandOne, operandTwo);
+            answerInput.textContent = result;
+            liveInput.textContent = operandOne + " + " + operandTwo + " =";
+            currentSum = result;
+            resetAfterResult();
+            return result;
+        }
+    } 
 }
 
-function handleNumberOrOperation(input)
+function handleNumber(number)
 {
-    switch(input)
+    if (number === "0")
     {
-        case 0:
-            currentInput.push(0);
-            currentInputString += "0";
-            liveInput.textContent = currentInputString;
-            break;
-        
-        case 1:
-            currentInput.push(1);
-            currentInputString += "1";
-            liveInput.textContent = currentInputString;
-            break;
+        if (operandOneActive)
+        {
+            if (operandOne.length === 1 && operandOne === "0")
+            {
+                return;
+            }
+            else
+            {
+                operandOne += number;
+                liveInput.textContent = operandOne;
+            }
+        }
 
-        case 2:
-            currentInput.push(0);
-            currentInputString += "0";
-            liveInput.textContent = currentInputString;
-            break;
-           
+        else if (operandTwoActive)
+        {
+            if (operandTwo.length === 1 && operandTwo === "0")
+            {
+                return;
+            }
+            else
+            {
+                operandTwo += number;
+                liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+            }
+        }
+    }
+
+    else if (number === "1")
+    {
+        if (operandOneActive)
+        {
+            operandOne += number;
+            liveInput.textContent = operandOne;
+        }
+
+        else if (operandTwoActive)
+        {
+            operandTwo += number;
+            liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+        }
+    }
+
+    else if (number === "2")
+    {
+        if (operandOneActive)
+        {
+            operandOne += number;
+            liveInput.textContent = operandOne;
+        }
+
+        else if (operandTwoActive)
+        {
+            operandTwo += number;
+            liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+        }
+    }
+
+    else if (number === "3")
+    {
+        if (operandOneActive)
+        {
+            operandOne += number;
+            liveInput.textContent = operandOne;
+        }
+
+        else if (operandTwoActive)
+        {
+            operandTwo += number;
+            liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+        }
+    }
+
+    else if (number === "4")
+    {
+        if (operandOneActive)
+        {
+            operandOne += number;
+            liveInput.textContent = operandOne;
+        }
+
+        else if (operandTwoActive)
+        {
+            operandTwo += number;
+            liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+        }
+    }
+
+    else if (number === "5")
+    {
+        if (operandOneActive)
+        {
+            operandOne += number;
+            liveInput.textContent = operandOne;
+        }
+
+        else if (operandTwoActive)
+        {
+            operandTwo += number;
+            liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+        }
+    }
+
+    else if (number === "6")
+    {
+        if (operandOneActive)
+        {
+            operandOne += number;
+            liveInput.textContent = operandOne;
+        }
+
+        else if (operandTwoActive)
+        {
+            operandTwo += number;
+            liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+        }
+    }
+
+    else if (number === "7")
+    {
+        if (operandOneActive)
+        {
+            operandOne += number;
+            liveInput.textContent = operandOne;
+        }
+
+        else if (operandTwoActive)
+        {
+            operandTwo += number;
+            liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+        }
+    }
+
+    else if (number === "8")
+    {
+        if (operandOneActive)
+        {
+            operandOne += number;
+            liveInput.textContent = operandOne;
+        }
+
+        else if (operandTwoActive)
+        {
+            operandTwo += number;
+            liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+        }
+    }
+
+    else if (number === "9")
+    {
+        if (operandOneActive)
+        {
+            operandOne += number;
+            liveInput.textContent = operandOne;
+        }
+
+        else if (operandTwoActive)
+        {
+            operandTwo += number;
+            liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+        }
+    }
+
+    else if (number === ".")
+    {
+        if (operandOneActive)
+        {
+            operandOne += number;
+            liveInput.textContent = operandOne;
+        }
+
+        else if (operandTwoActive)
+        {
+            operandTwo += number;
+            liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+        }
+    }
+    
+}
+
+function handleOperation(operation)
+{
+    if (operation === "^")
+    {
+        if (operandOneActive && currentSum !== "none" && operandOne.length === 0)
+        {
+            operandOne = currentSum;
+            currentOperation = "^";
+            liveInput.textContent = operandOne + " ^ ";
+            operandOneActive = false;
+            operandTwoActive = true;
+        }
+        else if (operandOneActive && operandOne.length === 0)
+        {
+            return;
+        }
+
+        else if (operandTwoActive && operandTwo.length === 0)
+        {
+            return;
+        }
+
+        else if (operandOneActive)
+        {
+            operandOneActive = false;
+            operandTwoActive = true;
+            currentOperation = "^";
+            liveInput.textContent = operandOne + " ^ ";
+        }
+
+        
+        else if (operandTwoActive)
+        {
+            currentSum = getResult();
+            operandOne = currentSum;
+            currentOperation = "^";
+            liveInput.textContent = operandOne + " ^ ";
+            answerInput.textContent = currentSum;
+            operandOneActive = false;
+            operandTwoActive = true;
+        }
+    }
+
+    else if (operation === "÷")
+    {
+        if (operandOneActive && currentSum !== "none" && operandOne.length === 0)
+        {
+            operandOne = currentSum;
+            currentOperation = "÷";
+            liveInput.textContent = operandOne + " ÷ ";
+            operandOneActive = false;
+            operandTwoActive = true;
+        }
+
+        else if (operandOneActive && operandOne.length === 0)
+        {
+            return;
+        }
+
+        else if (operandOneActive)
+        {
+            operandOneActive = false;
+            operandTwoActive = true;
+            currentOperation = "÷";
+            liveInput.textContent = operandOne + " ÷ ";
+        }
+
+        else if (operandTwoActive && operandTwo.length === 0)
+        {
+            return;
+        }
+        
+        else if (operandTwoActive)
+        {
+            currentSum = getResult();
+            operandOne = currentSum;
+            currentOperation = "÷";
+            liveInput.textContent = operandOne + " ÷ ";
+            answerInput.textContent = currentSum;
+            operandOneActive = false;
+            operandTwoActive = true;
+        }
+
+    }
+
+    else if (operation === "*")
+    {
+        if (operandOneActive && currentSum !== "none" && operandOne.length === 0)
+        {
+            operandOne = currentSum;
+            currentOperation = "*";
+            liveInput.textContent = operandOne + " * ";
+            operandOneActive = false;
+            operandTwoActive = true;
+        }
+
+        else if (operandOneActive && operandOne.length === 0)
+        {
+            return;
+        }
+
+        else if (operandOneActive)
+        {
+            operandOneActive = false;
+            operandTwoActive = true;
+            currentOperation = "*";
+            liveInput.textContent = operandOne + " * ";
+        }
+
+        else if (operandTwoActive && operandTwo.length === 0)
+        {
+            return;
+        }
+        
+        else if (operandTwoActive)
+        {
+            currentSum = getResult();
+            operandOne = currentSum;
+            currentOperation = "*";
+            liveInput.textContent = operandOne + " * ";
+            answerInput.textContent = currentSum;
+            operandOneActive = false;
+            operandTwoActive = true;
+        }
+
+    }
+
+    else if (operation === "-")
+    {
+        if (operandOneActive && currentSum !== "none" && operandOne.length === 0)
+        {
+            operandOne = currentSum;
+            currentOperation = "-";
+            liveInput.textContent = operandOne + " - ";
+            operandOneActive = false;
+            operandTwoActive = true;
+        }
+
+        else if (operandOneActive && operandOne.length === 0)
+        {
+            return;
+        }
+
+        else if (operandOneActive)
+        {
+            operandOneActive = false;
+            operandTwoActive = true;
+            currentOperation = "-";
+            liveInput.textContent = operandOne + " - ";
+        }
+
+        else if (operandTwoActive && operandTwo.length === 0)
+        {
+            return;
+        }
+        
+        else if (operandTwoActive)
+        {
+            currentSum = getResult();
+            operandOne = currentSum;
+            currentOperation = "-";
+            liveInput.textContent = operandOne + " - ";
+            answerInput.textContent = currentSum;
+            operandOneActive = false;
+            operandTwoActive = true;
+        }
+
+    }
+
+    else if (operation === "+")
+    {
+        if (operandOneActive && currentSum !== "none" && operandOne.length === 0)
+        {
+            operandOne = currentSum;
+            currentOperation = "+";
+            liveInput.textContent = operandOne + " + ";
+            operandOneActive = false;
+            operandTwoActive = true;
+        }
+
+        else if (operandOneActive && operandOne.length === 0)
+        {
+            return;
+        }
+
+        else if (operandOneActive)
+        {
+            operandOneActive = false;
+            operandTwoActive = true;
+            currentOperation = "+";
+            liveInput.textContent = operandOne + " + ";
+        }
+
+        else if (operandTwoActive && operandTwo.length === 0)
+        {
+            return;
+        }
+        
+        else if (operandTwoActive)
+        {
+            currentSum = getResult();
+            operandOne = currentSum;
+            currentOperation = "+";
+            liveInput.textContent = operandOne + " + ";
+            answerInput.textContent = currentSum;
+            operandOneActive = false;
+            operandTwoActive = true;
+        }
+
+    }
+
+    else if (operation === "(+/-)")
+    {
+        if (operandOneActive)
+        {
+            if (operandOne.length === 0)
+            {
+                operandOne = "-";
+                liveInput.textContent = operandOne;
+            }
+            else 
+            {
+                operandOne *= -1;
+                liveInput.textContent = operandOne;
+            }
+        }
+
+        else if (operandTwoActive)
+        {
+            if (operandTwo.length === 0)
+            {
+                operandTwo = "-";
+                liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+            }
+            else 
+            {
+                operandTwo *= -1;
+                liveInput.textContent = operandOne + " " + currentOperation + " " + operandTwo;
+            }
+        }
+         
     }
 }
 
 function add(a, b)
 {
-    return a + b;
+    return Number(a) + Number(b);
 }
 
 function subtract(a, b)
@@ -148,8 +603,11 @@ function exponent(a, b)
     return a ** b;
 }
 
-function sqaureRoot(a)
+function resetAfterResult()
 {
-    return Math.sqrt(a);
+    operandOne = "";
+    operandOneActive = true;
+    operandTwo = "";
+    operandTwoActive = false;
+    currentOperation = "";
 }
-
